@@ -1,0 +1,45 @@
+%%[
+SET @fName = [FirstName]
+SET @pwt = [PreferredWorkoutType]
+SET @memberID = [MemberID]
+IF NOT EMPTY(@fName) THEN
+SET @fNametrim = TRIM(@fName)
+SET @finalName = Propercase(@fNametrim)
+ELSE
+SET @finalName = "Hi there"
+/*classes*/
+SET @Key1 = [PreferredWorkoutType]
+SET @rows = LookupRows("Classes", "WorkoutType", @Key1)
+
+SET @rowCount = rowcount(@rows)
+
+/* CHECKS IF THERE IS A ROW THAT EXISTS */
+IF @rowCount > 0 THEN
+
+  SET @row = row(@rows,1)
+  /* IF YOU WANT TO RETRIEVE MORE THAN 3 FIELDS, ADD MORE ROWS AS PER BELOW */
+  /* IF YOU WANT TO RETRIEVE LESS THAN 3 FIELDS, REMOVE ROWS AS PER BELOW */
+  SET @FieldName1 = field(@row, "ClassName")
+  SET @FieldName2 = field(@row, "StartDate")
+  SET @classDate = Format(@FieldName2, "DD/MM/YYYY")
+  SET @FieldName3 = field(@row, "ClassDescription")
+
+/* IF THE ROW DOES NOT EXIST */
+ELSE
+  
+  /* THIS FUNCTION WILL CANCEL THE EMAIL OR SMS SEND */
+  RaiseError("No row was found")  
+
+ENDIF
+
+/* RETRIEVE FIELD FROM SENDING DE TO USE IN THE LOOK UP FUNCTION */
+SET @Key1 = [MemberID]
+
+/* LOOK UP FUNCTION */
+SET @systemDate = Now(1)
+SET @localDate = systemDateToLocalDate(@systemDate)
+
+SET @FieldNameToRetrieve = Lookup("MemberActivity", "LastActivityDate", "MemberID", @Key1)
+SET @dayssinceLastActivity = Datediff(@FieldNameToRetrieve,  @localDate, "D")
+
+]%%
